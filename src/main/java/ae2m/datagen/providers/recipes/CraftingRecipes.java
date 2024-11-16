@@ -17,8 +17,8 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.ItemLike;
 import ae2m.core.definitions.Tags;
-import ae2m.core.registries.ModBlocks;
-import ae2m.core.registries.ModItems;
+import ae2m.core.registries.AE2MBlocks;
+import ae2m.core.registries.AE2MItems;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.CompletableFuture;
@@ -36,23 +36,23 @@ public class CraftingRecipes extends RecipeProvider {
 
     @Override
     protected void buildRecipes (@NotNull RecipeOutput consumer) {
-        component(consumer, ModItems.TIER_1M, StorageTier.SIZE_256K, AEItems.SKY_DUST.asItem(), null);
-        component(consumer, ModItems.TIER_4M, ModItems.TIER_1M, ModItems.STEEL_PLATE, null);
-        component(consumer, ModItems.TIER_16M, ModItems.TIER_4M, ModItems.STEEL_PLATE, null);
-        component(consumer, ModItems.TIER_64M, ModItems.TIER_16M, ModItems.STEEL_PLATE, null);
-        component(consumer, ModItems.TIER_256M, ModItems.TIER_64M, ModItems.STEEL_PLATE, null);
-        component(consumer, ModItems.TIER_1B, ModItems.TIER_256M, ModItems.STEEL_PLATE, null);
+        component(consumer, AE2MItems.TIER_1M, StorageTier.SIZE_256K, AEItems.SKY_DUST.asItem(), null);
+        component(consumer, AE2MItems.TIER_4M, AE2MItems.TIER_1M, AE2MItems.STEEL_PLATE, null);
+        component(consumer, AE2MItems.TIER_16M, AE2MItems.TIER_4M, AE2MItems.STEEL_PLATE, null);
+        component(consumer, AE2MItems.TIER_64M, AE2MItems.TIER_16M, AE2MItems.STEEL_PLATE, null);
+        component(consumer, AE2MItems.TIER_256M, AE2MItems.TIER_64M, AE2MItems.STEEL_PLATE, null);
+        component(consumer, AE2MItems.TIER_1B, AE2MItems.TIER_256M, AE2MItems.STEEL_PLATE, null);
 
-        housing(consumer, ModItems.STEEL_ITEM_HOUSING, Tags.STEEL_INGOTS);
+        housing(consumer, AE2MItems.STEEL_ITEM_HOUSING, Tags.STEEL_INGOTS);
 
-        cell(consumer, ModItems.ITEM_CELL_1M, ModItems.CELL_COMPONENT_1M, ModItems.STEEL_ITEM_HOUSING, Tags.STEEL_INGOTS);
-        cell(consumer, ModItems.ITEM_CELL_4M, ModItems.CELL_COMPONENT_4M, ModItems.STEEL_ITEM_HOUSING, Tags.STEEL_INGOTS);
-        cell(consumer, ModItems.ITEM_CELL_16M, ModItems.CELL_COMPONENT_16M, ModItems.STEEL_ITEM_HOUSING, Tags.STEEL_INGOTS);
-        cell(consumer, ModItems.ITEM_CELL_64M, ModItems.CELL_COMPONENT_64M, ModItems.STEEL_ITEM_HOUSING, Tags.STEEL_INGOTS);
-        cell(consumer, ModItems.ITEM_CELL_256M, ModItems.CELL_COMPONENT_256M, ModItems.STEEL_ITEM_HOUSING, Tags.STEEL_INGOTS);
-        cell(consumer, ModItems.ITEM_CELL_1B, ModItems.CELL_COMPONENT_1B, ModItems.STEEL_ITEM_HOUSING, Tags.STEEL_INGOTS);
+        cell(consumer, AE2MItems.ITEM_CELL_1M, AE2MItems.CELL_COMPONENT_1M, AE2MItems.STEEL_ITEM_HOUSING, Tags.STEEL_INGOTS);
+        cell(consumer, AE2MItems.ITEM_CELL_4M, AE2MItems.CELL_COMPONENT_4M, AE2MItems.STEEL_ITEM_HOUSING, Tags.STEEL_INGOTS);
+        cell(consumer, AE2MItems.ITEM_CELL_16M, AE2MItems.CELL_COMPONENT_16M, AE2MItems.STEEL_ITEM_HOUSING, Tags.STEEL_INGOTS);
+        cell(consumer, AE2MItems.ITEM_CELL_64M, AE2MItems.CELL_COMPONENT_64M, AE2MItems.STEEL_ITEM_HOUSING, Tags.STEEL_INGOTS);
+        cell(consumer, AE2MItems.ITEM_CELL_256M, AE2MItems.CELL_COMPONENT_256M, AE2MItems.STEEL_ITEM_HOUSING, Tags.STEEL_INGOTS);
+        cell(consumer, AE2MItems.ITEM_CELL_1B, AE2MItems.CELL_COMPONENT_1B, AE2MItems.STEEL_ITEM_HOUSING, Tags.STEEL_INGOTS);
 
-        metallicBlock(consumer, ModItems.STEEL_INGOT, ModBlocks.STEEL_BLOCK);
+        metallicBlock(consumer, AE2MItems.STEEL_INGOT, AE2MBlocks.STEEL_BLOCK);
     }
 
     private void metallicBlock (RecipeOutput consumer, ItemDefinition<?> item, BlockDefinition<?> output) {
@@ -86,10 +86,10 @@ public class CraftingRecipes extends RecipeProvider {
             recipe.define('a', binderTag);
         }
 
-        recipe.define('b', ModItems.DEEP_STORAGE_PROCESSOR)
+        recipe.define('b', AE2MItems.DEEP_STORAGE_PROCESSOR)
                 .define('c', precedingComponent)
                 .define('d', AEBlocks.QUARTZ_VIBRANT_GLASS)
-                .unlockedBy("has_accumulation_processor", has(ModItems.DEEP_STORAGE_PROCESSOR))
+                .unlockedBy("has_accumulation_processor", has(AE2MItems.DEEP_STORAGE_PROCESSOR))
                 .unlockedBy("has_" + BuiltInRegistries.ITEM.getKey(precedingComponent).getPath(), has(precedingComponent))
                 .save(output, AE2M.getResource("cells/" + BuiltInRegistries.ITEM.getKey(tier.componentSupplier().get()).getPath()));
     }

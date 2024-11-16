@@ -3,7 +3,7 @@ package ae2m.datagen.providers.models;
 import ae2m.core.AE2M;
 import appeng.core.definitions.BlockDefinition;
 import appeng.core.definitions.ItemDefinition;
-import ae2m.core.registries.ModItems;
+import ae2m.core.registries.AE2MItems;
 import ae2m.datagen.IDataProvider;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
@@ -22,7 +22,7 @@ public class ItemModelProvider extends net.neoforged.neoforge.client.model.gener
 
     @Override
     protected void registerModels () {
-        for (var item : ModItems.getItems()) {
+        for (var item : AE2MItems.getItems()) {
             basicItem(item.asItem());
         }
     }

@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
-public class ModBlocks {
+public class AE2MBlocks {
 
     public static final DeferredRegister.Blocks DR = DeferredRegister.createBlocks(AE2M.MOD_ID);
 
@@ -50,7 +50,7 @@ public class ModBlocks {
 
     public static <T extends Block> BlockDefinition<T> reg (final String name, ResourceLocation id, final Supplier<T> supplier, @Nullable BiFunction<Block, Item.Properties, BlockItem> itemFactory, boolean addToTab) {
         var deferredBlock = DR.register(id.getPath(), supplier);
-        var deferredItem = ModItems.DR.register(id.getPath(), () -> {
+        var deferredItem = AE2MItems.DR.register(id.getPath(), () -> {
             var block = deferredBlock.get();
             var itemProperties = new Item.Properties();
             if (itemFactory != null) {

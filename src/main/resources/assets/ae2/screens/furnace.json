@@ -1,12 +1,11 @@
 {
-  "$schema": "../../ae2machines/screens/ae2mschema.json",
   "includes": [
-    "common/ae2mcommon.json",
-    "common/ae2mplayer_inventory.json",
-    "common/ae2mtoolbox.json"
+    "../screens/common/common.json",
+    "../screens/common/player_inventory.json",
+    "../screens/common/toolbox.json"
   ],
   "background": {
-    "texture": "guis/furnace.png",
+    "texture": "guis/ae2machines/furnace.png",
     "srcRect": [0, 0, 176, 178]
   },
   "slots": {

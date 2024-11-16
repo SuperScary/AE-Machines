@@ -1,6 +1,6 @@
 package ae2m.init;
 
-import ae2m.block.machine.blockentity.FurnaceBlockEntity;
+import ae2m.blockentity.machine.FurnaceBlockEntity;
 import ae2m.core.AE2M;
 import ae2m.menu.implementations.FurnaceMenu;
 import appeng.menu.AEBaseMenu;

@@ -4,6 +4,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 
@@ -11,6 +13,8 @@ public interface AE2M {
 
     String MOD_ID = "ae2machines";
     String NAME = "AE2 Machines";
+
+    Logger LOGGER = LoggerFactory.getLogger(NAME);
 
     static AE2M instance () {
         return AE2MBase.INSTANCE;
@@ -33,6 +37,10 @@ public interface AE2M {
     Level getClientLevel ();
 
     MinecraftServer getCurrentServer ();
+
+    static Logger getLogger () {
+        return LOGGER;
+    }
 
 
 }

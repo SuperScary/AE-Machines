@@ -15,20 +15,20 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.registries.DeferredRegister;
-import ae2m.block.machine.blockentity.FurnaceBlockEntity;
+import ae2m.blockentity.machine.FurnaceBlockEntity;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-public final class ModBlockEntities {
+public final class AE2MBlockEntities {
 
     private static final List<DeferredBlockEntityType<?>> BLOCK_ENTITY_TYPES = new ArrayList<>();
 
     public static final DeferredRegister<BlockEntityType<?>> DR = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, AE2M.MOD_ID);
 
-    public static final DeferredBlockEntityType<FurnaceBlockEntity> FURNACE = create("furnace", FurnaceBlockEntity.class, FurnaceBlockEntity::new, ModBlocks.FURNACE);
+    public static final DeferredBlockEntityType<FurnaceBlockEntity> FURNACE = create("furnace", FurnaceBlockEntity.class, FurnaceBlockEntity::new, AE2MBlocks.FURNACE);
 
     @SuppressWarnings("unchecked")
     public static <T extends BlockEntity> List<BlockEntityType<? extends T>> getSubclassesOf (Class<T> baseClass) {

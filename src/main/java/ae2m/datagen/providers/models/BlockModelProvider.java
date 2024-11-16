@@ -5,7 +5,7 @@ import net.minecraft.data.models.blockstates.Variant;
 import net.minecraft.data.models.blockstates.VariantProperties;
 import ae2m.block.DecorativeBlock;
 import ae2m.core.AE2M;
-import ae2m.core.registries.ModBlocks;
+import ae2m.core.registries.AE2MBlocks;
 import net.minecraft.data.PackOutput;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.client.model.generators.ModelFile;
@@ -19,12 +19,12 @@ public class BlockModelProvider extends BlockStateProvider {
 
     @Override
     protected void registerStatesAndModels () {
-        for (var block : ModBlocks.getBlocks()) {
+        for (var block : AE2MBlocks.getBlocks()) {
             if (block.block() instanceof DecorativeBlock) blockWithItem(block);
         }
 
         var furnace = models().getExistingFile(AE2M.getResource("furnace"));
-        multiVariantGenerator(ModBlocks.FURNACE, Variant.variant().with(VariantProperties.MODEL, furnace.getLocation()))
+        multiVariantGenerator(AE2MBlocks.FURNACE, Variant.variant().with(VariantProperties.MODEL, furnace.getLocation()))
                 .with(createFacingDispatch(0, 0));
 
     }

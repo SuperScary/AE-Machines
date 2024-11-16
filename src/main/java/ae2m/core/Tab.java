@@ -2,7 +2,7 @@ package ae2m.core;
 
 import appeng.core.definitions.ItemDefinition;
 import ae2m.block.BaseBlock;
-import ae2m.core.registries.ModItems;
+import ae2m.core.registries.AE2MItems;
 import ae2m.item.BaseBlockItem;
 import ae2m.item.BaseItem;
 import com.google.common.collect.HashMultimap;
@@ -26,7 +26,7 @@ public class Tab {
     public static void init (Registry<CreativeModeTab> registry) {
         var tab = CreativeModeTab.builder()
                 .title(Component.translatable("itemGroup." + AE2M.MOD_ID))
-                .icon(ModItems.DEEP_STORAGE_PROCESSOR::stack)
+                .icon(AE2MItems.DEEP_STORAGE_PROCESSOR::stack)
                 .displayItems(Tab::buildDisplayItems)
                 .build();
         Registry.register(registry, MAIN, tab);

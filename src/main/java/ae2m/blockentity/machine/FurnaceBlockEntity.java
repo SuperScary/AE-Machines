@@ -1,5 +1,7 @@
-package ae2m.block.machine.blockentity;
+package ae2m.blockentity.machine;
 
+import ae2m.blockentity.NetworkCraftingBlockEntity;
+import ae2m.core.AE2M;
 import appeng.api.config.*;
 import appeng.api.implementations.blockentities.ICrankable;
 import appeng.api.inventories.InternalInventory;
@@ -12,13 +14,9 @@ import appeng.api.networking.ticking.TickingRequest;
 import appeng.api.orientation.BlockOrientation;
 import appeng.api.orientation.RelativeSide;
 import appeng.api.upgrades.IUpgradeInventory;
-import appeng.api.upgrades.IUpgradeableObject;
 import appeng.api.upgrades.UpgradeInventories;
 import appeng.api.util.AECableType;
 import appeng.api.util.IConfigManager;
-import appeng.api.util.IConfigurableObject;
-import appeng.blockentity.grid.AENetworkedPoweredBlockEntity;
-import appeng.core.definitions.AEItems;
 import appeng.core.settings.TickRates;
 import appeng.util.inv.AppEngInternalInventory;
 import appeng.util.inv.CombinedInternalInventory;
@@ -27,17 +25,20 @@ import appeng.util.inv.filter.IAEItemFilter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.item.crafting.SmeltingRecipe;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import ae2m.core.recipe.FurnaceRecipes;
-import ae2m.core.registries.ModBlocks;
+import ae2m.core.registries.AE2MBlocks;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-public class FurnaceBlockEntity extends AENetworkedPoweredBlockEntity implements IGridTickable, IUpgradeableObject, IConfigurableObject {
+public class FurnaceBlockEntity extends NetworkCraftingBlockEntity {
 
     private static final int MAX_PROCESSING_STEPS = 200;
 
@@ -68,15 +69,14 @@ public class FurnaceBlockEntity extends AENetworkedPoweredBlockEntity implements
         super(blockEntityType, pos, blockState);
 
         this.getMainNode()
-                .setIdlePowerUsage(0)
+                .setIdlePowerUsage(2)
                 .addService(IGridTickable.class, this);
-        this.setInternalMaxPower(1600);
+        this.setInternalMaxPower(16_000);
 
-        this.upgrades = UpgradeInventories.forMachine(ModBlocks.FURNACE, 4, this::saveChanges);
+        this.upgrades = UpgradeInventories.forMachine(AE2MBlocks.FURNACE, 4, this::saveChanges);
         this.configManager = IConfigManager.builder(this::onConfigChanged)
                 .registerSetting(Settings.INSCRIBER_SEPARATE_SIDES, YesNo.NO)
                 .registerSetting(Settings.AUTO_EXPORT, YesNo.NO)
-                .registerSetting(Settings.INSCRIBER_INPUT_CAPACITY, InscriberInputCapacity.SIXTY_FOUR)
                 .build();
 
         var automationFilter = new AutomationFilter();
@@ -100,7 +100,6 @@ public class FurnaceBlockEntity extends AENetworkedPoweredBlockEntity implements
     @Override
     protected void onOrientationChanged (BlockOrientation orientation) {
         super.onOrientationChanged(orientation);
-
         this.setPowerSides(getGridConnectableSides(orientation));
     }
 
@@ -148,19 +147,18 @@ public class FurnaceBlockEntity extends AENetworkedPoweredBlockEntity implements
 
     @Override
     public TickingRequest getTickingRequest (IGridNode node) {
-        return new TickingRequest(TickRates.Inscriber, !hasAutoExportWork() && !this.hasCraftWork());
+        return new TickingRequest(1, 20, !hasAutoExportWork() && !this.hasCraftWork());
     }
 
     private boolean hasAutoExportWork () {
-        return !this.mainItemHandler.getStackInSlot(1).isEmpty()
-                && configManager.getSetting(Settings.AUTO_EXPORT) == YesNo.YES;
+        return !this.mainItemHandler.getStackInSlot(1).isEmpty() && configManager.getSetting(Settings.AUTO_EXPORT) == YesNo.YES;
     }
 
     private boolean hasCraftWork () {
         var task = this.getTask();
         if (task != null) {
             // Only process if the result would fit.
-            return mainItemHandler.insertItem(1, task.getResultItem(getLevel().registryAccess()).copy(), true).isEmpty();
+            return mainItemHandler.insertItem(1, task.getResultItem(Objects.requireNonNull(getLevel()).registryAccess()).copy(), true).isEmpty();
         }
 
         this.setProcessingTime(0);
@@ -175,13 +173,18 @@ public class FurnaceBlockEntity extends AENetworkedPoweredBlockEntity implements
                 return null; // No input to handle
             }
 
-            this.cachedTask = FurnaceRecipes.findRecipe(level, input);
+            var recipe = Objects.requireNonNull(getLevel()).getRecipeManager().getRecipeFor(RecipeType.SMELTING, new SingleRecipeInput(input), getLevel());
+            AE2M.getLogger().info("Recipe: {}", recipe);
+            this.cachedTask = recipe.map(RecipeHolder::value).get();
+            AE2M.getLogger().info("Found recipe: {}", this.cachedTask);
         }
         return this.cachedTask;
     }
 
     @Override
     public TickRateModulation tickingRequest (IGridNode node, int ticksSinceLastCall) {
+        Objects.requireNonNull(getLevel()).registryAccess();
+
         if (this.isCooking()) {
             final SmeltingRecipe out = this.getTask();
             if (out != null) {
@@ -198,15 +201,7 @@ public class FurnaceBlockEntity extends AENetworkedPoweredBlockEntity implements
                 IEnergyService eg = grid.getEnergyService();
                 IEnergySource src = this;
 
-                // Note: required ticks = 16 + ceil(MAX_PROCESSING_STEPS / speedFactor)
-                final int speedFactor = switch (this.upgrades.getInstalledUpgrades(AEItems.SPEED_CARD)) {
-                    case 1 -> 3; // 83 ticks
-                    case 2 -> 5; // 56 ticks
-                    case 3 -> 10; // 36 ticks
-                    case 4 -> 50; // 20 ticks
-                    default -> 2; // 116 ticks
-                };
-                final int powerConsumption = 10 * speedFactor;
+                final int powerConsumption = 10;
                 final double powerThreshold = powerConsumption - 0.01;
                 double powerReq = this.extractAEPower(powerConsumption, Actionable.SIMULATE, PowerMultiplier.CONFIG);
 
@@ -217,7 +212,7 @@ public class FurnaceBlockEntity extends AENetworkedPoweredBlockEntity implements
 
                 if (powerReq > powerThreshold) {
                     src.extractAEPower(powerConsumption, Actionable.MODULATE, PowerMultiplier.CONFIG);
-                    this.setProcessingTime(this.getProcessingTime() + speedFactor);
+                    this.setProcessingTime(this.getProcessingTime());
                 }
             });
 
@@ -274,7 +269,7 @@ public class FurnaceBlockEntity extends AENetworkedPoweredBlockEntity implements
     }
 
     private boolean isSeparateSides () {
-        return this.configManager.getSetting(Settings.INSCRIBER_SEPARATE_SIDES) == YesNo.YES;
+        return this.configManager.getSetting(Settings.INSCRIBER_SEPARATE_SIDES) == YesNo.NO;
     }
 
     @Override
@@ -290,11 +285,6 @@ public class FurnaceBlockEntity extends AENetworkedPoweredBlockEntity implements
         if (setting == Settings.INSCRIBER_SEPARATE_SIDES) {
             // Our exposed inventory changed, invalidate caps!
             invalidateCapabilities();
-        }
-
-        if (setting == Settings.INSCRIBER_INPUT_CAPACITY) {
-            var capacity = configManager.getSetting(Settings.INSCRIBER_INPUT_CAPACITY).capacity;
-            mainItemHandler.setMaxStackSize(0, capacity);
         }
 
         saveChanges();
@@ -320,38 +310,15 @@ public class FurnaceBlockEntity extends AENetworkedPoweredBlockEntity implements
         this.processingTime = processingTime;
     }
 
-    @Nullable
-    public ICrankable getCrankable (Direction direction) {
-        if (direction != getFront()) {
-            return new Crankable();
-        }
-        return null;
+    @Override
+    public boolean isActive () {
+        return isCooking();
     }
 
     public class BaseFilter implements IAEItemFilter {
         @Override
         public boolean allowInsert (InternalInventory inv, int slot, ItemStack stack) {
-            // output slot
-            if (slot == 1) {
-                // slots and automation prevent insertion into the output,
-                // we need it here for the furnace's own internal logic
-                return true;
-            }
-
-            // only allow if is a proper recipe match
-            ItemStack middle = mainItemHandler.getStackInSlot(0);
-
-            if (inv == mainItemHandler)
-                middle = stack;
-
-            assert level != null;
-            for (var holder : FurnaceRecipes.getRecipes(level)) {
-                var recipe = holder.value();
-                if (!middle.isEmpty() && !recipe.getIngredients().get(0).test(middle)) {
-                    continue;
-                }
-            }
-            return false;
+            return true;
         }
     }
 

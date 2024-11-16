@@ -2,7 +2,7 @@ package ae2m.datagen.providers.tag;
 
 import net.neoforged.neoforge.common.Tags;
 import ae2m.core.AE2M;
-import ae2m.core.registries.ModItems;
+import ae2m.core.registries.AE2MItems;
 import ae2m.datagen.IDataProvider;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
@@ -24,10 +24,10 @@ public class ItemTagGenerator extends ItemTagsProvider implements IDataProvider 
     protected void addTags (HolderLookup.@NotNull Provider provider) {
         // Add item tags here
         this.tag(Tags.Items.INGOTS)
-                .add(ModItems.STEEL_INGOT.asItem());
+                .add(AE2MItems.STEEL_INGOT.asItem());
 
         this.tag(ae2m.core.definitions.Tags.STEEL_INGOTS)
-                .add(ModItems.STEEL_INGOT.asItem());
+                .add(AE2MItems.STEEL_INGOT.asItem());
     }
 
     @Override

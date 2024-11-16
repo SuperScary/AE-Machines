@@ -1,9 +1,9 @@
 package ae2m.core;
 
-import ae2m.block.machine.blockentity.FurnaceBlockEntity;
-import ae2m.core.registries.ModBlockEntities;
-import ae2m.core.registries.ModBlocks;
-import ae2m.core.registries.ModItems;
+import ae2m.blockentity.machine.FurnaceBlockEntity;
+import ae2m.core.registries.AE2MBlockEntities;
+import ae2m.core.registries.AE2MBlocks;
+import ae2m.core.registries.AE2MItems;
 import appeng.api.AECapabilities;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -29,9 +29,9 @@ public abstract class AE2MBase implements AE2M {
         }
         INSTANCE = this;
 
-        ModBlocks.DR.register(modEventBus);
-        ModItems.DR.register(modEventBus);
-        ModBlockEntities.DR.register(modEventBus);
+        AE2MBlocks.DR.register(modEventBus);
+        AE2MItems.DR.register(modEventBus);
+        AE2MBlockEntities.DR.register(modEventBus);
         AE2MMenuTypes.DR.register(modEventBus);
 
         modEventBus.addListener(Tab::initExternal);
@@ -49,7 +49,7 @@ public abstract class AE2MBase implements AE2M {
     }
 
     private static void initCapabilities (RegisterCapabilitiesEvent event) {
-        event.registerBlockEntity(AECapabilities.CRANKABLE, ModBlockEntities.FURNACE.get(), FurnaceBlockEntity::getCrankable);
+        event.registerBlockEntity(AECapabilities.CRANKABLE, AE2MBlockEntities.FURNACE.get(), FurnaceBlockEntity::getCrankable);
     }
 
     @Override

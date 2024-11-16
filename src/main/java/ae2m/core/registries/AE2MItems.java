@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
-public class ModItems {
+public class AE2MItems {
 
     public static final DeferredRegister.Items DR = DeferredRegister.createItems(AE2M.MOD_ID);
 

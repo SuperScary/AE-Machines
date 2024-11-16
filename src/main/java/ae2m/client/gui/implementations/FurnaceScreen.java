@@ -1,5 +1,6 @@
 package ae2m.client.gui.implementations;
 
+import appeng.api.config.PowerUnit;
 import appeng.api.config.Settings;
 import appeng.api.config.YesNo;
 import appeng.client.gui.implementations.UpgradeableScreen;
@@ -34,8 +35,10 @@ public class FurnaceScreen extends UpgradeableScreen<FurnaceMenu> {
     protected void updateBeforeRender () {
         super.updateBeforeRender();
 
-        int progress = menu.getCurrentProgress() * 100 / this.menu.getMaxProgress();
-        this.pb.setFullMsg(Component.literal(progress + "%"));
+        int progress = (int) (menu.getCurrentPower() * 100 / menu.getMaxPower());
+        this.pb.setFullMsg(Component.literal(progress + "% " + PowerUnit.AE.symbolName));
+
+        int craftProgress = menu.getCurrentProgress() * 100 / menu.getMaxProgress();
 
         this.separateSidesBtn.set(getMenu().getSeparateSides());
         this.autoExportBtn.set(getMenu().getAutoExport());

@@ -1,5 +1,7 @@
 package ae2m.block.machine;
 
+import ae2m.blockentity.machine.FurnaceBlockEntity;
+import ae2m.init.AE2MMenuTypes;
 import appeng.api.orientation.IOrientationStrategy;
 import appeng.api.orientation.OrientationStrategies;
 import appeng.block.AEBaseEntityBlock;
@@ -27,10 +29,10 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
-import ae2m.block.machine.blockentity.FurnaceBlockEntity;
-import ae2m.menu.implementations.FurnaceMenu;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Objects;
 
 public class FurnaceBlock extends AEBaseEntityBlock<FurnaceBlockEntity> implements SimpleWaterloggedBlock {
 
@@ -42,16 +44,15 @@ public class FurnaceBlock extends AEBaseEntityBlock<FurnaceBlockEntity> implemen
     }
 
     @Override
-    public int getLightBlock (BlockState state, BlockGetter level, BlockPos pos) {
-        return 2; // FIXME validate this. a) possibly not required because of getShape b) value
-        // range. was 2 in 1.10
+    public int getLightBlock (@NotNull BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos) {
+        return 2;
     }
 
     @Override
-    protected InteractionResult useWithoutItem (BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
+    protected @NotNull InteractionResult useWithoutItem (BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
         if (level.getBlockEntity(pos) instanceof FurnaceBlockEntity be) {
             if (!level.isClientSide()) {
-                MenuOpener.open(FurnaceMenu.TYPE, player, MenuLocators.forBlockEntity(be));
+                MenuOpener.open(AE2MMenuTypes.FURNACE_MENU, player, MenuLocators.forBlockEntity(be));
             }
             return InteractionResult.sidedSuccess(level.isClientSide());
         }
@@ -74,7 +75,7 @@ public class FurnaceBlock extends AEBaseEntityBlock<FurnaceBlockEntity> implemen
     @Nullable
     public BlockState getStateForPlacement (BlockPlaceContext context) {
         var fluidState = context.getLevel().getFluidState(context.getClickedPos());
-        return super.getStateForPlacement(context).setValue(WATERLOGGED, fluidState.getType() == Fluids.WATER);
+        return Objects.requireNonNull(super.getStateForPlacement(context)).setValue(WATERLOGGED, fluidState.getType() == Fluids.WATER);
     }
 
     @Override
@@ -95,15 +96,9 @@ public class FurnaceBlock extends AEBaseEntityBlock<FurnaceBlockEntity> implemen
 
     @Override
     public void animateTick (@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull RandomSource random) {
-        if (state.getValue(WATERLOGGED)) return;
-
         double xPos = (double) pos.getX() + 0.5;
         double yPos = pos.getY();
         double zPos = (double) pos.getZ() + 0.5;
-
-        if (random.nextDouble() < 0.1) {
-            level.playLocalSound(xPos, yPos, zPos, SoundEvents.FURNACE_FIRE_CRACKLE, SoundSource.BLOCKS, 1.0F, 1.0F, false);
-        }
 
         Direction direction = state.getValue(BlockStateProperties.FACING);
         Direction.Axis axis = direction.getAxis();
@@ -113,13 +108,26 @@ public class FurnaceBlock extends AEBaseEntityBlock<FurnaceBlockEntity> implemen
         double yOffsets = random.nextDouble() * 6.0 / 8.0;
         double zOffsets = axis == Direction.Axis.Z ? (double) direction.getStepZ() * 0.52 : defaultOffset;
 
-        if (level.getBlockEntity(pos) instanceof FurnaceBlockEntity be && be.getAECurrentPower() > 0) {
-            level.addParticle(ParticleTypes.FLAME, xPos + xOffsets, yPos + yOffsets, zPos + zOffsets, 0d, 0d, 0d);
-        }
+        if (state.getValue(WATERLOGGED)) {
+            if (random.nextDouble() < 0.1) {
+                level.playLocalSound(xPos, yPos, zPos, SoundEvents.BUBBLE_COLUMN_UPWARDS_AMBIENT, SoundSource.BLOCKS, 1.0F, 1.0F, false);
+            }
 
-        if (level.getBlockEntity(pos) instanceof FurnaceBlockEntity be && !be.getInternalInventory().isEmpty() && be.isCooking()) {
-            var stack = be.getInternalInventory().getStackInSlot(0);
-            level.addParticle(new ItemParticleOption(ParticleTypes.ITEM, stack), xPos + xOffsets, yPos + yOffsets, zPos + zOffsets, 0d, 0d, 0d);
+            level.addParticle(ParticleTypes.BUBBLE, xPos + xOffsets, yPos + yOffsets, zPos + zOffsets, 0d, 0d, 0d);
+        } else {
+
+            if (level.getBlockEntity(pos) instanceof FurnaceBlockEntity be && be.getAECurrentPower() > 0) {
+                level.addParticle(ParticleTypes.SMOKE, xPos + xOffsets, yPos + yOffsets, zPos + zOffsets, 0d, 0d, 0d);
+
+                if (random.nextDouble() < 0.1) {
+                    level.playLocalSound(xPos, yPos, zPos, SoundEvents.FURNACE_FIRE_CRACKLE, SoundSource.BLOCKS, 1.0F, 1.0F, false);
+                }
+            }
+
+            if (level.getBlockEntity(pos) instanceof FurnaceBlockEntity be && !be.getInternalInventory().isEmpty() && be.isCooking()) {
+                var stack = be.getInternalInventory().getStackInSlot(0);
+                level.addParticle(new ItemParticleOption(ParticleTypes.ITEM, stack), xPos + xOffsets, yPos + yOffsets, zPos + zOffsets, 0d, 0d, 0d);
+            }
         }
 
         super.animateTick(state, level, pos, random);
