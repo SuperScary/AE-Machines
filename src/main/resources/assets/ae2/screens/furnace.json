@@ -1,0 +1,45 @@
+{
+  "$schema": "../../ae2machines/screens/ae2mschema.json",
+  "includes": [
+    "common/ae2mcommon.json",
+    "common/ae2mplayer_inventory.json",
+    "common/ae2mtoolbox.json"
+  ],
+  "background": {
+    "texture": "guis/furnace.png",
+    "srcRect": [0, 0, 176, 178]
+  },
+  "slots": {
+    "MACHINE_INPUT": {
+      "left": 63,
+      "top": 39
+    },
+    "MACHINE_OUTPUT": {
+      "left": 113,
+      "top": 40
+    }
+  },
+  "text": {
+    "dialog_title": {
+      "text": {
+        "translate": "block.ae2machines.furnace"
+      },
+      "position": {
+        "left": 8,
+        "top": 6
+      }
+    }
+  },
+  "images": {
+    "progressBar": {
+      "texture": "guis/furnace.png",
+      "srcRect": [176, 0, 6, 18]
+    }
+  },
+  "widgets": {
+    "progressBar": {
+      "left": 135,
+      "top": 39
+    }
+  }
+}
