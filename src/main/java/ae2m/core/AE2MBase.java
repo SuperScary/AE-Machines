@@ -5,11 +5,15 @@ import ae2m.core.registries.AE2MBlockEntities;
 import ae2m.core.registries.AE2MBlocks;
 import ae2m.core.registries.AE2MItems;
 import appeng.api.AECapabilities;
+import appeng.api.networking.IInWorldGridNodeHost;
+import appeng.blockentity.AEBaseInvBlockEntity;
+import appeng.blockentity.powersink.AEBasePoweredBlockEntity;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.registries.RegisterEvent;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
@@ -50,6 +54,19 @@ public abstract class AE2MBase implements AE2M {
 
     private static void initCapabilities (RegisterCapabilitiesEvent event) {
         event.registerBlockEntity(AECapabilities.CRANKABLE, AE2MBlockEntities.FURNACE.get(), FurnaceBlockEntity::getCrankable);
+
+        for (var type : AE2MBlockEntities.getSubclassesOf(AEBaseInvBlockEntity.class)) {
+            event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, type, AEBaseInvBlockEntity::getExposedItemHandler);
+        }
+
+        for (var type : AE2MBlockEntities.getSubclassesOf(AEBasePoweredBlockEntity.class)) {
+            event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, type, AEBasePoweredBlockEntity::getEnergyStorage);
+        }
+
+        for (var type : AE2MBlockEntities.getImplementorsOf(IInWorldGridNodeHost.class)) {
+            event.registerBlockEntity(AECapabilities.IN_WORLD_GRID_NODE_HOST, type, (object, context) -> (IInWorldGridNodeHost) object);
+        }
+
     }
 
     @Override

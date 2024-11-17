@@ -2,9 +2,8 @@ package ae2m.blockentity.machine;
 
 import ae2m.blockentity.NetworkCraftingBlockEntity;
 import ae2m.blockentity.misc.FurnaceRecipes;
-import ae2m.core.AE2M;
+import ae2m.core.registries.AE2MBlocks;
 import appeng.api.config.*;
-import appeng.api.implementations.blockentities.ICrankable;
 import appeng.api.inventories.InternalInventory;
 import appeng.api.networking.IGridNode;
 import appeng.api.networking.energy.IEnergyService;
@@ -19,7 +18,6 @@ import appeng.api.upgrades.UpgradeInventories;
 import appeng.api.util.AECableType;
 import appeng.api.util.IConfigManager;
 import appeng.core.definitions.AEItems;
-import appeng.core.settings.TickRates;
 import appeng.util.inv.AppEngInternalInventory;
 import appeng.util.inv.CombinedInternalInventory;
 import appeng.util.inv.FilteredInternalInventory;
@@ -30,14 +28,10 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.item.crafting.SmeltingRecipe;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import ae2m.core.registries.AE2MBlocks;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -193,10 +187,11 @@ public class FurnaceBlockEntity extends NetworkCraftingBlockEntity {
                 if (this.mainItemHandler.insertItem(1, outputCopy, true).isEmpty()) {
                     this.setProcessingTime(0);
                     this.mainItemHandler.extractItem(0, 1, false);
+                }
+                this.saveChanges();
+                this.setCooking(false);
+                this.markForUpdate();
             }
-            this.saveChanges();
-            this.setCooking(false);
-            this.markForUpdate();
         } else if (this.hasCraftWork()) {
             getMainNode().ifPresent(grid -> {
                 IEnergyService eg = grid.getEnergyService();
@@ -242,12 +237,11 @@ public class FurnaceBlockEntity extends NetworkCraftingBlockEntity {
         if (this.pushOutResult()) {
             return TickRateModulation.URGENT;
         }
-
         return this.hasCraftWork() ? TickRateModulation.URGENT : this.hasAutoExportWork() ? TickRateModulation.SLOWER : TickRateModulation.SLEEP;
     }
 
     @Override
-    protected boolean readFromStream(RegistryFriendlyByteBuf data) {
+    protected boolean readFromStream (RegistryFriendlyByteBuf data) {
         var c = super.readFromStream(data);
 
         var oldCooking = isCooking();
@@ -266,7 +260,7 @@ public class FurnaceBlockEntity extends NetworkCraftingBlockEntity {
     }
 
     @Override
-    protected void writeToStream(RegistryFriendlyByteBuf data) {
+    protected void writeToStream (RegistryFriendlyByteBuf data) {
         super.writeToStream(data);
 
         data.writeBoolean(isCooking());
@@ -276,28 +270,28 @@ public class FurnaceBlockEntity extends NetworkCraftingBlockEntity {
     }
 
     @Override
-    protected void saveVisualState(CompoundTag data) {
+    protected void saveVisualState (CompoundTag data) {
         super.saveVisualState(data);
 
         data.putBoolean("cooking", isCooking());
     }
 
     @Override
-    protected void loadVisualState(CompoundTag data) {
+    protected void loadVisualState (CompoundTag data) {
         super.loadVisualState(data);
 
         setCooking(data.getBoolean("cooking"));
     }
 
     @Override
-    public void saveAdditional(CompoundTag data, HolderLookup.Provider registries) {
+    public void saveAdditional (CompoundTag data, HolderLookup.Provider registries) {
         super.saveAdditional(data, registries);
         this.upgrades.writeToNBT(data, "upgrades", registries);
         this.configManager.writeToNBT(data, registries);
     }
 
     @Override
-    public void loadTag(CompoundTag data, HolderLookup.Provider registries) {
+    public void loadTag (CompoundTag data, HolderLookup.Provider registries) {
         super.loadTag(data, registries);
         this.upgrades.readFromNBT(data, "upgrades", registries);
         this.configManager.readFromNBT(data, registries);
@@ -417,5 +411,4 @@ public class FurnaceBlockEntity extends NetworkCraftingBlockEntity {
             return !isCooking();
         }
     }
-
 }
