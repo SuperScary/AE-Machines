@@ -5,7 +5,7 @@
     "../screens/common/toolbox.json"
   ],
   "background": {
-    "texture": "guis/ae2machines/furnace.png",
+    "texture": "guis/furnace.png",
     "srcRect": [0, 0, 176, 178]
   },
   "slots": {

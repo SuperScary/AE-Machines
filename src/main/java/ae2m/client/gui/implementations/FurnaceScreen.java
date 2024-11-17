@@ -1,6 +1,6 @@
 package ae2m.client.gui.implementations;
 
-import appeng.api.config.PowerUnit;
+import ae2m.menu.implementations.FurnaceMenu;
 import appeng.api.config.Settings;
 import appeng.api.config.YesNo;
 import appeng.client.gui.implementations.UpgradeableScreen;
@@ -10,7 +10,6 @@ import appeng.client.gui.widgets.ServerSettingToggleButton;
 import appeng.client.gui.widgets.SettingToggleButton;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
-import ae2m.menu.implementations.FurnaceMenu;
 
 public class FurnaceScreen extends UpgradeableScreen<FurnaceMenu> {
 
@@ -35,8 +34,8 @@ public class FurnaceScreen extends UpgradeableScreen<FurnaceMenu> {
     protected void updateBeforeRender () {
         super.updateBeforeRender();
 
-        int progress = (int) (menu.getCurrentPower() * 100 / menu.getMaxPower());
-        this.pb.setFullMsg(Component.literal(progress + "% " + PowerUnit.AE.symbolName));
+        int progress = menu.processingTime * 100 / menu.maxProcessingTime;
+        this.pb.setFullMsg(Component.literal(progress + "%"));
 
         int craftProgress = menu.getCurrentProgress() * 100 / menu.getMaxProgress();
 

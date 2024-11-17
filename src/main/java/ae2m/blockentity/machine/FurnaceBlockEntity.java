@@ -1,6 +1,7 @@
 package ae2m.blockentity.machine;
 
 import ae2m.blockentity.NetworkCraftingBlockEntity;
+import ae2m.blockentity.misc.FurnaceRecipes;
 import ae2m.core.AE2M;
 import appeng.api.config.*;
 import appeng.api.implementations.blockentities.ICrankable;
@@ -17,6 +18,7 @@ import appeng.api.upgrades.IUpgradeInventory;
 import appeng.api.upgrades.UpgradeInventories;
 import appeng.api.util.AECableType;
 import appeng.api.util.IConfigManager;
+import appeng.core.definitions.AEItems;
 import appeng.core.settings.TickRates;
 import appeng.util.inv.AppEngInternalInventory;
 import appeng.util.inv.CombinedInternalInventory;
@@ -24,6 +26,9 @@ import appeng.util.inv.FilteredInternalInventory;
 import appeng.util.inv.filter.IAEItemFilter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
@@ -32,7 +37,6 @@ import net.minecraft.world.item.crafting.SmeltingRecipe;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import ae2m.core.recipe.FurnaceRecipes;
 import ae2m.core.registries.AE2MBlocks;
 import org.jetbrains.annotations.Nullable;
 
@@ -45,12 +49,11 @@ public class FurnaceBlockEntity extends NetworkCraftingBlockEntity {
     private final IUpgradeInventory upgrades;
     private final IConfigManager configManager;
     private int processingTime = 0;
-    private int finalStep = 0;
 
     private boolean cooking = false;
 
     // Internally visible inventories
-    private final IAEItemFilter baseFilter = new FurnaceBlockEntity.BaseFilter();
+    private final IAEItemFilter baseFilter = new BaseFilter();
     private final AppEngInternalInventory mainItemHandler = new AppEngInternalInventory(this, 2, 64, baseFilter);
     // Combined internally visible inventories
     private final InternalInventory inv = new CombinedInternalInventory(this.mainItemHandler);
@@ -69,7 +72,7 @@ public class FurnaceBlockEntity extends NetworkCraftingBlockEntity {
         super(blockEntityType, pos, blockState);
 
         this.getMainNode()
-                .setIdlePowerUsage(2)
+                .setIdlePowerUsage(6)
                 .addService(IGridTickable.class, this);
         this.setInternalMaxPower(16_000);
 
@@ -154,11 +157,10 @@ public class FurnaceBlockEntity extends NetworkCraftingBlockEntity {
         return !this.mainItemHandler.getStackInSlot(1).isEmpty() && configManager.getSetting(Settings.AUTO_EXPORT) == YesNo.YES;
     }
 
-    private boolean hasCraftWork () {
+    public boolean hasCraftWork () {
         var task = this.getTask();
         if (task != null) {
-            // Only process if the result would fit.
-            return mainItemHandler.insertItem(1, task.getResultItem(Objects.requireNonNull(getLevel()).registryAccess()).copy(), true).isEmpty();
+            return mainItemHandler.insertItem(1, task.getResultItem(null).copy(), true).isEmpty();
         }
 
         this.setProcessingTime(0);
@@ -173,11 +175,9 @@ public class FurnaceBlockEntity extends NetworkCraftingBlockEntity {
                 return null; // No input to handle
             }
 
-            var recipe = Objects.requireNonNull(getLevel()).getRecipeManager().getRecipeFor(RecipeType.SMELTING, new SingleRecipeInput(input), getLevel());
-            AE2M.getLogger().info("Recipe: {}", recipe);
-            this.cachedTask = recipe.map(RecipeHolder::value).get();
-            AE2M.getLogger().info("Found recipe: {}", this.cachedTask);
+            this.cachedTask = FurnaceRecipes.findRecipes(getLevel(), input);
         }
+
         return this.cachedTask;
     }
 
@@ -190,18 +190,26 @@ public class FurnaceBlockEntity extends NetworkCraftingBlockEntity {
             if (out != null) {
                 final ItemStack outputCopy = out.getResultItem(getLevel().registryAccess()).copy();
 
-                if (this.mainItemHandler.insertItem(1, outputCopy, false).isEmpty()) {
+                if (this.mainItemHandler.insertItem(1, outputCopy, true).isEmpty()) {
                     this.setProcessingTime(0);
                     this.mainItemHandler.extractItem(0, 1, false);
-                }
             }
             this.saveChanges();
+            this.setCooking(false);
+            this.markForUpdate();
         } else if (this.hasCraftWork()) {
             getMainNode().ifPresent(grid -> {
                 IEnergyService eg = grid.getEnergyService();
                 IEnergySource src = this;
 
-                final int powerConsumption = 10;
+                final int speedFactor = switch (this.upgrades.getInstalledUpgrades(AEItems.SPEED_CARD)) {
+                    case 1 -> 3; // 83 ticks
+                    case 2 -> 5; // 56 ticks
+                    case 3 -> 10; // 36 ticks
+                    case 4 -> 50; // 20 ticks
+                    default -> 2; // 116 ticks
+                };
+                final int powerConsumption = 10 * speedFactor;
                 final double powerThreshold = powerConsumption - 0.01;
                 double powerReq = this.extractAEPower(powerConsumption, Actionable.SIMULATE, PowerMultiplier.CONFIG);
 
@@ -212,7 +220,7 @@ public class FurnaceBlockEntity extends NetworkCraftingBlockEntity {
 
                 if (powerReq > powerThreshold) {
                     src.extractAEPower(powerConsumption, Actionable.MODULATE, PowerMultiplier.CONFIG);
-                    this.setProcessingTime(this.getProcessingTime());
+                    this.setProcessingTime(this.getProcessingTime() + speedFactor);
                 }
             });
 
@@ -220,10 +228,11 @@ public class FurnaceBlockEntity extends NetworkCraftingBlockEntity {
                 this.setProcessingTime(this.getMaxProcessingTime());
                 final SmeltingRecipe out = this.getTask();
                 if (out != null) {
-                    final ItemStack outputCopy = out.getResultItem(getLevel().registryAccess()).copy();
+                    final ItemStack outputCopy = out.getResultItem(null).copy();
+
                     if (this.mainItemHandler.insertItem(1, outputCopy, true).isEmpty()) {
+                        mainItemHandler.insertItem(1, outputCopy, false);
                         this.setCooking(true);
-                        this.finalStep = 0;
                         this.markForUpdate();
                     }
                 }
@@ -234,8 +243,67 @@ public class FurnaceBlockEntity extends NetworkCraftingBlockEntity {
             return TickRateModulation.URGENT;
         }
 
-        return this.hasCraftWork() ? TickRateModulation.URGENT
-                : this.hasAutoExportWork() ? TickRateModulation.SLOWER : TickRateModulation.SLEEP;
+        return this.hasCraftWork() ? TickRateModulation.URGENT : this.hasAutoExportWork() ? TickRateModulation.SLOWER : TickRateModulation.SLEEP;
+    }
+
+    @Override
+    protected boolean readFromStream(RegistryFriendlyByteBuf data) {
+        var c = super.readFromStream(data);
+
+        var oldCooking = isCooking();
+        var newCooking = data.readBoolean();
+
+        if (oldCooking != newCooking && newCooking) {
+            setCooking(true);
+        }
+
+        for (int i = 0; i < this.inv.size(); i++) {
+            this.inv.setItemDirect(i, ItemStack.OPTIONAL_STREAM_CODEC.decode(data));
+        }
+        this.cachedTask = null;
+
+        return c;
+    }
+
+    @Override
+    protected void writeToStream(RegistryFriendlyByteBuf data) {
+        super.writeToStream(data);
+
+        data.writeBoolean(isCooking());
+        for (int i = 0; i < this.inv.size(); i++) {
+            ItemStack.OPTIONAL_STREAM_CODEC.encode(data, inv.getStackInSlot(i));
+        }
+    }
+
+    @Override
+    protected void saveVisualState(CompoundTag data) {
+        super.saveVisualState(data);
+
+        data.putBoolean("cooking", isCooking());
+    }
+
+    @Override
+    protected void loadVisualState(CompoundTag data) {
+        super.loadVisualState(data);
+
+        setCooking(data.getBoolean("cooking"));
+    }
+
+    @Override
+    public void saveAdditional(CompoundTag data, HolderLookup.Provider registries) {
+        super.saveAdditional(data, registries);
+        this.upgrades.writeToNBT(data, "upgrades", registries);
+        this.configManager.writeToNBT(data, registries);
+    }
+
+    @Override
+    public void loadTag(CompoundTag data, HolderLookup.Provider registries) {
+        super.loadTag(data, registries);
+        this.upgrades.readFromNBT(data, "upgrades", registries);
+        this.configManager.readFromNBT(data, registries);
+
+        // Update stack tracker
+        lastStacks.put(mainItemHandler, mainItemHandler.getStackInSlot(0));
     }
 
     private boolean pushOutResult () {
@@ -312,13 +380,17 @@ public class FurnaceBlockEntity extends NetworkCraftingBlockEntity {
 
     @Override
     public boolean isActive () {
-        return isCooking();
+        return isCooking() || this.isPowered();
     }
 
     public class BaseFilter implements IAEItemFilter {
         @Override
         public boolean allowInsert (InternalInventory inv, int slot, ItemStack stack) {
-            return true;
+            if (slot == 1) {
+                return true; // No inserting into the output slot
+            }
+            var recipe = FurnaceRecipes.findRecipes(getLevel(), stack);
+            return recipe != null;
         }
     }
 

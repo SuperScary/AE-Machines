@@ -39,15 +39,15 @@ public class FurnaceBER implements BlockEntityRenderer<FurnaceBlockEntity> {
 
             renderer.renderStatic(itemStack, ItemDisplayContext.FIXED, getLightLevel(entity.getLevel(), entity.getBlockPos()), OverlayTexture.NO_OVERLAY, poseStack, bufferSource, entity.getLevel(), 1);
             poseStack.popPose();
-        }
 
-        if (entity.getInternalCurrentPower() > 0 && !state.getValue(BlockStateProperties.WATERLOGGED)) {
-            renderFireBlock(entity, poseStack, bufferSource, light, overlay);
+            if (!state.getValue(BlockStateProperties.WATERLOGGED) && entity.isActive()) {
+                renderFireBlock(poseStack, bufferSource, light, overlay);
+            }
         }
 
     }
 
-    private void renderFireBlock (FurnaceBlockEntity entity, PoseStack poseStack, MultiBufferSource bufferSource, int light, int overlay) {
+    private void renderFireBlock (PoseStack poseStack, MultiBufferSource bufferSource, int light, int overlay) {
         var renderer = Minecraft.getInstance().getBlockRenderer();
         var fire = Blocks.FIRE.defaultBlockState();
 

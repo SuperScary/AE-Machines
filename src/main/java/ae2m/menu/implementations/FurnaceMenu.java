@@ -15,6 +15,11 @@ import appeng.menu.slot.OutputSlot;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
+import net.neoforged.neoforge.energy.IEnergyStorage;
+
+import java.util.Objects;
 
 public class FurnaceMenu extends UpgradeableMenu<FurnaceBlockEntity> implements IProgressProvider {
 
@@ -31,18 +36,10 @@ public class FurnaceMenu extends UpgradeableMenu<FurnaceBlockEntity> implements 
     @GuiSync(8)
     public YesNo autoExport = YesNo.NO;
 
-    @GuiSync(9)
-    public double currentPower = -1;
-    @GuiSync(10)
-    public double maxPower = -1;
-
     public FurnaceMenu (int id, Inventory ip, FurnaceBlockEntity host) {
         super(AE2MMenuTypes.FURNACE_MENU, id, ip, host);
 
         var inv = host.getInternalInventory();
-
-        this.currentPower = host.getAECurrentPower();
-        this.maxPower = host.getAEMaxPower();
 
         var inputSlot = new AppEngSlot(inv, 0);
         this.inputSlot = this.addSlot(inputSlot, SlotSemantics.MACHINE_INPUT);
@@ -62,8 +59,6 @@ public class FurnaceMenu extends UpgradeableMenu<FurnaceBlockEntity> implements 
         if (isServerSide()) {
             this.maxProcessingTime = getHost().getMaxProcessingTime();
             this.processingTime = getHost().getProcessingTime();
-            this.currentPower = getHost().getAECurrentPower();
-            this.maxPower = getHost().getAEMaxPower();
         }
         super.standardDetectAndSendChanges();
     }
@@ -71,9 +66,11 @@ public class FurnaceMenu extends UpgradeableMenu<FurnaceBlockEntity> implements 
     @Override
     public boolean isValidForSlot (Slot s, ItemStack i) {
         final ItemStack stack = i.copy();
+        var level = getHost().getLevel();
 
         if (s == this.inputSlot) {
-            return FurnaceRecipes.findRecipe(getHost().getLevel(), stack) != null;
+            var recipe = FurnaceRecipes.findRecipe(level, stack); //Objects.requireNonNull(level).getRecipeManager().getRecipeFor(RecipeType.SMELTING, new SingleRecipeInput(stack), level);
+            return recipe != null;
         }
         return true;
     }
@@ -86,14 +83,6 @@ public class FurnaceMenu extends UpgradeableMenu<FurnaceBlockEntity> implements 
     @Override
     public int getMaxProgress () {
         return this.maxProcessingTime;
-    }
-
-    public double getCurrentPower () {
-        return this.currentPower;
-    }
-
-    public double getMaxPower () {
-        return this.maxPower;
     }
 
     public YesNo getSeparateSides () {
