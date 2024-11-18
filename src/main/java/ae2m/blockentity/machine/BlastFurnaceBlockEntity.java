@@ -1,7 +1,7 @@
 package ae2m.blockentity.machine;
 
 import ae2m.blockentity.NetworkCraftingBlockEntity;
-import ae2m.blockentity.misc.FurnaceRecipes;
+import ae2m.blockentity.misc.BlastingRecipes;
 import appeng.api.config.*;
 import appeng.api.inventories.ISegmentedInventory;
 import appeng.api.inventories.InternalInventory;
@@ -20,7 +20,6 @@ import appeng.api.util.AECableType;
 import appeng.api.util.IConfigManager;
 import appeng.core.definitions.AEBlocks;
 import appeng.core.definitions.AEItems;
-import appeng.helpers.InterfaceLogicHost;
 import appeng.util.inv.AppEngInternalInventory;
 import appeng.util.inv.CombinedInternalInventory;
 import appeng.util.inv.FilteredInternalInventory;
@@ -32,8 +31,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraft.world.item.crafting.SmeltingRecipe;
+import net.minecraft.world.item.crafting.BlastingRecipe;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -41,7 +39,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-public class FurnaceBlockEntity extends NetworkCraftingBlockEntity {
+public class BlastFurnaceBlockEntity extends NetworkCraftingBlockEntity {
 
     private static final int MAX_PROCESSING_STEPS = 200;
 
@@ -65,9 +63,9 @@ public class FurnaceBlockEntity extends NetworkCraftingBlockEntity {
     // Combined externally visible inventories
     private final InternalInventory combinedItemHandlerExtern;
 
-    private SmeltingRecipe cachedTask = null;
+    private BlastingRecipe cachedTask = null;
 
-    public FurnaceBlockEntity (BlockEntityType<?> blockEntityType, BlockPos pos, BlockState blockState) {
+    public BlastFurnaceBlockEntity (BlockEntityType<?> blockEntityType, BlockPos pos, BlockState blockState) {
         super(blockEntityType, pos, blockState);
 
         this.getMainNode().setFlags(GridFlags.REQUIRE_CHANNEL).setIdlePowerUsage(5.5d).addService(IGridTickable.class, this);
@@ -131,14 +129,14 @@ public class FurnaceBlockEntity extends NetworkCraftingBlockEntity {
     }
 
     @Nullable
-    public SmeltingRecipe getTask () {
+    public BlastingRecipe getTask () {
         if (this.cachedTask == null && level != null) {
             ItemStack input = this.mainItemHandler.getStackInSlot(0);
             if (input.isEmpty()) {
                 return null; // No input to handle
             }
 
-            this.cachedTask = FurnaceRecipes.findRecipes(getLevel(), input);
+            this.cachedTask = BlastingRecipes.findRecipes(getLevel(), input);
         }
 
         return this.cachedTask;
@@ -149,7 +147,7 @@ public class FurnaceBlockEntity extends NetworkCraftingBlockEntity {
         Objects.requireNonNull(getLevel()).registryAccess();
 
         if (this.isCooking()) {
-            final SmeltingRecipe out = this.getTask();
+            final BlastingRecipe out = this.getTask();
             if (out != null) {
                 final ItemStack outputCopy = out.getResultItem(getLevel().registryAccess()).copy();
                 if (this.mainItemHandler.insertItem(1, outputCopy, false).isEmpty()) {
@@ -189,7 +187,7 @@ public class FurnaceBlockEntity extends NetworkCraftingBlockEntity {
 
             if (this.getProcessingTime() > this.getMaxProcessingTime()) {
                 this.setProcessingTime(this.getMaxProcessingTime());
-                final SmeltingRecipe out = this.getTask();
+                final BlastingRecipe out = this.getTask();
                 if (out != null) {
                     final ItemStack outputCopy = out.getResultItem(getLevel().registryAccess()).copy();
                     if (this.mainItemHandler.insertItem(1, outputCopy, true).isEmpty()) {
@@ -365,7 +363,7 @@ public class FurnaceBlockEntity extends NetworkCraftingBlockEntity {
             if (slot == 1) {
                 return true; // No inserting into the output slot
             }
-            var recipe = FurnaceRecipes.findRecipes(getLevel(), stack);
+            var recipe = BlastingRecipes.findRecipes(getLevel(), stack);
             return recipe != null;
         }
     }

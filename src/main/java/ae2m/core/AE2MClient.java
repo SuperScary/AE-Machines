@@ -1,5 +1,6 @@
 package ae2m.core;
 
+import ae2m.client.renderer.blockentity.BlastingBER;
 import ae2m.client.renderer.blockentity.FurnaceBER;
 import ae2m.core.registries.AE2MBlockEntities;
 import ae2m.init.client.AE2MScreens;
@@ -38,6 +39,7 @@ public class AE2MClient extends AE2MBase {
 
     private void registerEntityRenderers (EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(AE2MBlockEntities.FURNACE.get(), FurnaceBER::new);
+        event.registerBlockEntityRenderer(AE2MBlockEntities.BLAST_FURNACE.get(), BlastingBER::new);
     }
 
     private void postClientSetup (Minecraft minecraft) {

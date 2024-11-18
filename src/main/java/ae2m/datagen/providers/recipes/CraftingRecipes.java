@@ -1,10 +1,9 @@
 package ae2m.datagen.providers.recipes;
 
 import ae2m.core.AE2M;
-import appeng.core.definitions.AEBlocks;
-import appeng.core.definitions.AEItems;
-import appeng.core.definitions.BlockDefinition;
-import appeng.core.definitions.ItemDefinition;
+import appeng.api.util.AEColor;
+import appeng.core.definitions.*;
+import appeng.datagen.providers.tags.ConventionTags;
 import appeng.items.storage.StorageTier;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -19,6 +18,7 @@ import net.minecraft.world.level.ItemLike;
 import ae2m.core.definitions.Tags;
 import ae2m.core.registries.AE2MBlocks;
 import ae2m.core.registries.AE2MItems;
+import net.minecraft.world.level.block.Blocks;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.CompletableFuture;
@@ -53,6 +53,34 @@ public class CraftingRecipes extends RecipeProvider {
         cell(consumer, AE2MItems.ITEM_CELL_1B, AE2MItems.CELL_COMPONENT_1B, AE2MItems.STEEL_ITEM_HOUSING, Tags.STEEL_INGOTS);
 
         metallicBlock(consumer, AE2MItems.STEEL_INGOT, AE2MBlocks.STEEL_BLOCK);
+
+        machines(consumer);
+    }
+
+    private void machines (RecipeOutput consumer) {
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, AE2MBlocks.FURNACE)
+                .pattern("IRI")
+                .pattern("MFE")
+                .pattern("III")
+                .define('I', ConventionTags.IRON_INGOT)
+                .define('E', AEParts.EXPORT_BUS)
+                .define('M', AEParts.IMPORT_BUS)
+                .define('F', Blocks.FURNACE)
+                .define('R', ConventionTags.GLASS_CABLE)
+                .unlockedBy("has_furnace", has(Blocks.FURNACE))
+                .save(consumer, AE2M.getResource("machines/furnace"));
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, AE2MBlocks.BLAST_FURNACE)
+                .pattern("IRI")
+                .pattern("MFE")
+                .pattern("III")
+                .define('I', ConventionTags.IRON_INGOT)
+                .define('E', AEParts.EXPORT_BUS)
+                .define('M', AEParts.IMPORT_BUS)
+                .define('F', Blocks.BLAST_FURNACE)
+                .define('R', ConventionTags.GLASS_CABLE)
+                .unlockedBy("has_furnace", has(Blocks.FURNACE))
+                .save(consumer, AE2M.getResource("machines/blasting"));
     }
 
     private void metallicBlock (RecipeOutput consumer, ItemDefinition<?> item, BlockDefinition<?> output) {
@@ -120,13 +148,13 @@ public class CraftingRecipes extends RecipeProvider {
         cell(consumer, cell, component, housing);
     }
 
-    private void cell (RecipeOutput output, ItemDefinition<?> cell, ItemDefinition<?> component, ItemDefinition<?> housing) {
+    private void cell (RecipeOutput consumer, ItemDefinition<?> cell, ItemDefinition<?> component, ItemDefinition<?> housing) {
         ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, cell)
                 .requires(housing)
                 .requires(component)
                 .unlockedBy("has_" + component.id().getPath(), has(component))
                 .unlockedBy("has_" + housing.id().getPath(), has(housing))
-                .save(output, AE2M.getResource("cells/standard/" + cell.id().getPath() + "_with_housing"));
+                .save(consumer, AE2M.getResource("cells/standard/" + cell.id().getPath() + "_with_housing"));
     }
 
 }

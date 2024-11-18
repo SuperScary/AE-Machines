@@ -1,13 +1,14 @@
 package ae2m.datagen.providers.tag;
 
-import net.neoforged.neoforge.common.Tags;
 import ae2m.core.AE2M;
 import ae2m.core.registries.AE2MItems;
 import ae2m.datagen.IDataProvider;
+import appeng.datagen.providers.tags.ConventionTags;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.tags.ItemTagsProvider;
 import net.minecraft.world.level.block.Block;
+import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import org.jetbrains.annotations.NotNull;
 
@@ -28,6 +29,7 @@ public class ItemTagGenerator extends ItemTagsProvider implements IDataProvider 
 
         this.tag(ae2m.core.definitions.Tags.STEEL_INGOTS)
                 .add(AE2MItems.STEEL_INGOT.asItem());
+
     }
 
     @Override

@@ -1,6 +1,6 @@
 package ae2m.client.gui.implementations;
 
-import ae2m.menu.implementations.FurnaceMenu;
+import ae2m.menu.implementations.BlastFurnaceMenu;
 import appeng.api.config.Settings;
 import appeng.api.config.YesNo;
 import appeng.client.gui.implementations.UpgradeableScreen;
@@ -11,13 +11,13 @@ import appeng.client.gui.widgets.SettingToggleButton;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
-public class FurnaceScreen extends UpgradeableScreen<FurnaceMenu> {
+public class BlastFurnaceScreen extends UpgradeableScreen<BlastFurnaceMenu> {
 
     private final ProgressBar pb;
     private final SettingToggleButton<YesNo> separateSidesBtn;
     private final SettingToggleButton<YesNo> autoExportBtn;
 
-    public FurnaceScreen (FurnaceMenu menu, Inventory playerInventory, Component title, ScreenStyle style) {
+    public BlastFurnaceScreen (BlastFurnaceMenu menu, Inventory playerInventory, Component title, ScreenStyle style) {
         super(menu, playerInventory, title, style);
 
         this.pb = new ProgressBar(menu, style.getImage("progressBar"), ProgressBar.Direction.VERTICAL);

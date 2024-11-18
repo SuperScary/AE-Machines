@@ -1,5 +1,6 @@
 package ae2m.core.registries;
 
+import ae2m.block.machine.BlastFurnace;
 import ae2m.core.AE2M;
 import appeng.block.AEBaseBlock;
 import appeng.core.definitions.BlockDefinition;
@@ -35,6 +36,7 @@ public class AE2MBlocks {
      * MACHINES
      */
     public static final BlockDefinition<FurnaceBlock> FURNACE = reg("Furnace", () -> new FurnaceBlock(AEBaseBlock.metalProps().strength(6.f).noOcclusion()));
+    public static final BlockDefinition<BlastFurnace> BLAST_FURNACE = reg("Blast Furnace", () -> new BlastFurnace(AEBaseBlock.metalProps().strength(6.f).noOcclusion()));
 
     public static List<BlockDefinition<?>> getBlocks () {
         return Collections.unmodifiableList(BLOCKS);

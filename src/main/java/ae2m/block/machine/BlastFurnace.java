@@ -1,5 +1,6 @@
 package ae2m.block.machine;
 
+import ae2m.blockentity.machine.BlastFurnaceBlockEntity;
 import ae2m.blockentity.machine.FurnaceBlockEntity;
 import ae2m.init.AE2MMenuTypes;
 import appeng.api.orientation.IOrientationStrategy;
@@ -34,11 +35,11 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
-public class FurnaceBlock extends AEBaseEntityBlock<FurnaceBlockEntity> implements SimpleWaterloggedBlock {
+public class BlastFurnace extends AEBaseEntityBlock<BlastFurnaceBlockEntity> implements SimpleWaterloggedBlock {
 
     private static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 
-    public FurnaceBlock (Properties props) {
+    public BlastFurnace (Properties props) {
         super(props);
         this.registerDefaultState(this.defaultBlockState().setValue(WATERLOGGED, false));
     }
@@ -50,9 +51,9 @@ public class FurnaceBlock extends AEBaseEntityBlock<FurnaceBlockEntity> implemen
 
     @Override
     protected @NotNull InteractionResult useWithoutItem (BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
-        if (level.getBlockEntity(pos) instanceof FurnaceBlockEntity be) {
+        if (level.getBlockEntity(pos) instanceof BlastFurnaceBlockEntity be) {
             if (!level.isClientSide()) {
-                MenuOpener.open(AE2MMenuTypes.FURNACE_MENU, player, MenuLocators.forBlockEntity(be));
+                MenuOpener.open(AE2MMenuTypes.BLAST_FURNACE_MENU, player, MenuLocators.forBlockEntity(be));
             }
             return InteractionResult.sidedSuccess(level.isClientSide());
         }

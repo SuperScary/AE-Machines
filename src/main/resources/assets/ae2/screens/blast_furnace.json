@@ -1,0 +1,44 @@
+{
+  "includes": [
+    "../screens/common/common.json",
+    "../screens/common/player_inventory.json",
+    "../screens/common/toolbox.json"
+  ],
+  "background": {
+    "texture": "guis/blast_furnace.png",
+    "srcRect": [0, 0, 176, 178]
+  },
+  "slots": {
+    "MACHINE_INPUT": {
+      "left": 63,
+      "top": 39
+    },
+    "MACHINE_OUTPUT": {
+      "left": 113,
+      "top": 40
+    }
+  },
+  "text": {
+    "dialog_title": {
+      "text": {
+        "translate": "block.ae2machines.blast_furnace"
+      },
+      "position": {
+        "left": 8,
+        "top": 6
+      }
+    }
+  },
+  "images": {
+    "progressBar": {
+      "texture": "guis/blast_furnace.png",
+      "srcRect": [176, 0, 6, 18]
+    }
+  },
+  "widgets": {
+    "progressBar": {
+      "left": 135,
+      "top": 39
+    }
+  }
+}

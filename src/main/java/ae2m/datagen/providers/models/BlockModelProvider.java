@@ -27,6 +27,10 @@ public class BlockModelProvider extends BlockStateProvider {
         multiVariantGenerator(AE2MBlocks.FURNACE, Variant.variant().with(VariantProperties.MODEL, furnace.getLocation()))
                 .with(createFacingDispatch(0, 0));
 
+        var blasting = models().getExistingFile(AE2M.getResource("blast_furnace"));
+        multiVariantGenerator(AE2MBlocks.BLAST_FURNACE, Variant.variant().with(VariantProperties.MODEL, blasting.getLocation()))
+                .with(createFacingDispatch(0, 0));
+
     }
 
     private void leavesBlock (BlockDefinition<Block> blockRegistryObject) {

@@ -1,7 +1,7 @@
 package ae2m.menu.implementations;
 
-import ae2m.blockentity.machine.FurnaceBlockEntity;
-import ae2m.client.gui.implementations.FurnaceScreen;
+import ae2m.blockentity.machine.BlastFurnaceBlockEntity;
+import ae2m.client.gui.implementations.BlastFurnaceScreen;
 import ae2m.core.recipe.FurnaceRecipes;
 import ae2m.init.AE2MMenuTypes;
 import appeng.api.config.Settings;
@@ -20,9 +20,9 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * @see FurnaceScreen
+ * @see BlastFurnaceScreen
  */
-public class FurnaceMenu extends UpgradeableMenu<FurnaceBlockEntity> implements IProgressProvider {
+public class BlastFurnaceMenu extends UpgradeableMenu<BlastFurnaceBlockEntity> implements IProgressProvider {
 
     private final Slot inputSlot;
 
@@ -37,8 +37,8 @@ public class FurnaceMenu extends UpgradeableMenu<FurnaceBlockEntity> implements 
     @GuiSync(8)
     public YesNo autoExport = YesNo.NO;
 
-    public FurnaceMenu (int id, Inventory ip, FurnaceBlockEntity host) {
-        super(AE2MMenuTypes.FURNACE_MENU, id, ip, host);
+    public BlastFurnaceMenu (int id, Inventory ip, BlastFurnaceBlockEntity host) {
+        super(AE2MMenuTypes.BLAST_FURNACE_MENU, id, ip, host);
 
         var inv = host.getInternalInventory();
 

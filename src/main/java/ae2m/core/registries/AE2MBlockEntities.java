@@ -1,5 +1,6 @@
 package ae2m.core.registries;
 
+import ae2m.blockentity.machine.BlastFurnaceBlockEntity;
 import ae2m.core.AE2M;
 import appeng.block.AEBaseEntityBlock;
 import appeng.blockentity.AEBaseBlockEntity;
@@ -29,6 +30,7 @@ public final class AE2MBlockEntities {
     public static final DeferredRegister<BlockEntityType<?>> DR = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, AE2M.MOD_ID);
 
     public static final DeferredBlockEntityType<FurnaceBlockEntity> FURNACE = create("furnace", FurnaceBlockEntity.class, FurnaceBlockEntity::new, AE2MBlocks.FURNACE);
+    public static final DeferredBlockEntityType<BlastFurnaceBlockEntity> BLAST_FURNACE = create("blast_furnace", BlastFurnaceBlockEntity.class, BlastFurnaceBlockEntity::new, AE2MBlocks.BLAST_FURNACE);
 
     @SuppressWarnings("unchecked")
     public static <T extends BlockEntity> List<BlockEntityType<? extends T>> getSubclassesOf (Class<T> baseClass) {

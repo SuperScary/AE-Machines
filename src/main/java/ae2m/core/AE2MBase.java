@@ -1,5 +1,6 @@
 package ae2m.core;
 
+import ae2m.blockentity.machine.BlastFurnaceBlockEntity;
 import ae2m.blockentity.machine.FurnaceBlockEntity;
 import ae2m.core.registries.AE2MBlockEntities;
 import ae2m.core.registries.AE2MBlocks;
@@ -39,7 +40,7 @@ public abstract class AE2MBase implements AE2M {
         AE2MMenuTypes.DR.register(modEventBus);
 
         modEventBus.addListener(Tab::initExternal);
-        modEventBus.addListener(AE2MBase::initCapabilities);
+        modEventBus.addListener(this::initCapabilities);
         modEventBus.addListener((RegisterEvent event) -> {
             if (event.getRegistryKey() == Registries.CREATIVE_MODE_TAB) {
                 registerCreativeTabs();
@@ -48,12 +49,19 @@ public abstract class AE2MBase implements AE2M {
 
     }
 
+    /**
+     * Registers the creative tabs
+     */
     private void registerCreativeTabs () {
         Tab.init(BuiltInRegistries.CREATIVE_MODE_TAB);
     }
 
-    private static void initCapabilities (RegisterCapabilitiesEvent event) {
+    /**
+     * Initializes the capabilities for all blocks and items
+     */
+    private void initCapabilities (RegisterCapabilitiesEvent event) {
         event.registerBlockEntity(AECapabilities.CRANKABLE, AE2MBlockEntities.FURNACE.get(), FurnaceBlockEntity::getCrankable);
+        event.registerBlockEntity(AECapabilities.CRANKABLE, AE2MBlockEntities.BLAST_FURNACE.get(), BlastFurnaceBlockEntity::getCrankable);
 
         for (var type : AE2MBlockEntities.getSubclassesOf(AEBaseInvBlockEntity.class)) {
             event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, type, AEBaseInvBlockEntity::getExposedItemHandler);
