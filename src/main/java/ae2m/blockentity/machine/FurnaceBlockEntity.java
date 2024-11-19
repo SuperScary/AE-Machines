@@ -2,6 +2,7 @@ package ae2m.blockentity.machine;
 
 import ae2m.blockentity.NetworkCraftingBlockEntity;
 import ae2m.blockentity.misc.FurnaceRecipes;
+import ae2m.core.util.Utilities;
 import appeng.api.config.*;
 import appeng.api.inventories.ISegmentedInventory;
 import appeng.api.inventories.InternalInventory;
@@ -12,15 +13,11 @@ import appeng.api.networking.energy.IEnergySource;
 import appeng.api.networking.ticking.IGridTickable;
 import appeng.api.networking.ticking.TickRateModulation;
 import appeng.api.networking.ticking.TickingRequest;
-import appeng.api.orientation.BlockOrientation;
-import appeng.api.orientation.RelativeSide;
 import appeng.api.upgrades.IUpgradeInventory;
 import appeng.api.upgrades.UpgradeInventories;
-import appeng.api.util.AECableType;
 import appeng.api.util.IConfigManager;
 import appeng.core.definitions.AEBlocks;
 import appeng.core.definitions.AEItems;
-import appeng.helpers.InterfaceLogicHost;
 import appeng.util.inv.AppEngInternalInventory;
 import appeng.util.inv.CombinedInternalInventory;
 import appeng.util.inv.FilteredInternalInventory;
@@ -32,18 +29,20 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SmeltingRecipe;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.EnumSet;
+import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.Objects;
 
 public class FurnaceBlockEntity extends NetworkCraftingBlockEntity {
 
-    private static final int MAX_PROCESSING_STEPS = 200;
+    private static final int DEFAULT_PROCESSING_TIME = 200;
+    private int maxProcessingSteps = DEFAULT_PROCESSING_TIME;
 
     private final IUpgradeInventory upgrades;
     private final IConfigManager configManager;
@@ -91,7 +90,7 @@ public class FurnaceBlockEntity extends NetworkCraftingBlockEntity {
 
     @Override
     public void onChangeInventory (AppEngInternalInventory inv, int slot) {
-        if (slot == 0) {
+        if (Utilities.checkEqual(slot, 0)) {
             boolean sameItemSameTags = ItemStack.isSameItemSameComponents(inv.getStackInSlot(0), lastStacks.get(inv));
             lastStacks.put(inv, inv.getStackInSlot(0).copy());
             if (sameItemSameTags) {
@@ -120,6 +119,7 @@ public class FurnaceBlockEntity extends NetworkCraftingBlockEntity {
         return !this.mainItemHandler.getStackInSlot(1).isEmpty() && configManager.getSetting(Settings.AUTO_EXPORT) == YesNo.YES;
     }
 
+    @SuppressWarnings("all")
     public boolean hasCraftWork () {
         var task = this.getTask();
         if (task != null) {
@@ -139,18 +139,20 @@ public class FurnaceBlockEntity extends NetworkCraftingBlockEntity {
             }
 
             this.cachedTask = FurnaceRecipes.findRecipes(getLevel(), input);
+            this.setMaxProcessingSteps(this.cachedTask != null ? this.cachedTask.getCookingTime() : DEFAULT_PROCESSING_TIME);
         }
 
         return this.cachedTask;
     }
 
+    @SuppressWarnings("all")
     @Override
     public TickRateModulation tickingRequest (IGridNode node, int ticksSinceLastCall) {
         Objects.requireNonNull(getLevel()).registryAccess();
 
         if (this.isCooking()) {
             final SmeltingRecipe out = this.getTask();
-            if (out != null) {
+            if (Utilities.notNull(out)) {
                 final ItemStack outputCopy = out.getResultItem(getLevel().registryAccess()).copy();
                 if (this.mainItemHandler.insertItem(1, outputCopy, false).isEmpty()) {
                     this.setProcessingTime(0);
@@ -343,7 +345,11 @@ public class FurnaceBlockEntity extends NetworkCraftingBlockEntity {
     }
 
     public int getMaxProcessingTime () {
-        return MAX_PROCESSING_STEPS;
+        return maxProcessingSteps;
+    }
+
+    public void setMaxProcessingSteps (int maxProcessingSteps) {
+        this.maxProcessingSteps = maxProcessingSteps;
     }
 
     public int getProcessingTime () {

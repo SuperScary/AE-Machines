@@ -5,6 +5,7 @@ import ae2m.blockentity.machine.FurnaceBlockEntity;
 import ae2m.core.registries.AE2MBlockEntities;
 import ae2m.core.registries.AE2MBlocks;
 import ae2m.core.registries.AE2MItems;
+import ae2m.core.util.CompatabilityLayer;
 import appeng.api.AECapabilities;
 import appeng.api.networking.IInWorldGridNodeHost;
 import appeng.blockentity.AEBaseInvBlockEntity;
@@ -30,9 +31,13 @@ public abstract class AE2MBase implements AE2M {
 
     public AE2MBase (IEventBus modEventBus) {
         if (INSTANCE != null) {
-            throw new IllegalStateException("Already initialized");
+            AE2M.getLogger().error("Already initialized", new IllegalStateException("Already initialized"));
         }
         INSTANCE = this;
+
+        if (!CompatabilityLayer.checkRequiredMods()) {
+            AE2M.getLogger().error("Missing required mods. Did you forget to install the requirements?", new IllegalStateException("Missing requirements."));
+        }
 
         AE2MBlocks.DR.register(modEventBus);
         AE2MItems.DR.register(modEventBus);

@@ -10,11 +10,11 @@
   },
   "slots": {
     "MACHINE_INPUT": {
-      "left": 63,
+      "left": 50,
       "top": 39
     },
     "MACHINE_OUTPUT": {
-      "left": 113,
+      "left": 100,
       "top": 40
     }
   },
@@ -37,7 +37,7 @@
   },
   "widgets": {
     "progressBar": {
-      "left": 135,
+      "left": 122,
       "top": 39
     }
   }

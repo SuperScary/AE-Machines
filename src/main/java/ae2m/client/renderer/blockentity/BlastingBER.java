@@ -1,13 +1,13 @@
 package ae2m.client.renderer.blockentity;
 
 import ae2m.blockentity.machine.BlastFurnaceBlockEntity;
+import ae2m.client.renderer.BER;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
@@ -17,15 +17,16 @@ import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.neoforged.neoforge.client.model.data.ModelData;
+import org.jetbrains.annotations.NotNull;
 
-public class BlastingBER implements BlockEntityRenderer<BlastFurnaceBlockEntity> {
+public class BlastingBER extends BER<BlastFurnaceBlockEntity> {
 
     public BlastingBER (BlockEntityRendererProvider.Context context) {
-        super();
+        super(context);
     }
 
     @Override
-    public void render (BlastFurnaceBlockEntity entity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int light, int overlay) {
+    public void render (@NotNull BlastFurnaceBlockEntity entity, float partialTick, @NotNull PoseStack poseStack, @NotNull MultiBufferSource bufferSource, int light, int overlay) {
         var renderer = Minecraft.getInstance().getItemRenderer();
         var itemStack = entity.getInternalInventory().getStackInSlot(0);
         var state = entity.getBlockState();
