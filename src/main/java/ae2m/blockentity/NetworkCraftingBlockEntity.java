@@ -96,9 +96,9 @@ public abstract class NetworkCraftingBlockEntity extends AENetworkedPoweredBlock
      * @see InterfaceLogicHost
      * @see appeng.util.ConfigInventory
      */
-    private MEStorage getLocalInventory () {
+    public MEStorage getLocalInventory () {
         if (localInvHandler == null) {
-            //localInvHandler = new CraftingBlockInventory();
+            localInvHandler = new CraftingBlockInventory(getMainNode().getGrid().getStorageService().getInventory());
         }
         return localInvHandler;
     }

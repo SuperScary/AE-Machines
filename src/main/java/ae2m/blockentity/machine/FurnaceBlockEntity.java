@@ -1,5 +1,6 @@
 package ae2m.blockentity.machine;
 
+import ae2m.api.bug.Bug;
 import ae2m.blockentity.NetworkCraftingBlockEntity;
 import ae2m.blockentity.misc.FurnaceRecipes;
 import ae2m.core.util.Utilities;
@@ -13,11 +14,13 @@ import appeng.api.networking.energy.IEnergySource;
 import appeng.api.networking.ticking.IGridTickable;
 import appeng.api.networking.ticking.TickRateModulation;
 import appeng.api.networking.ticking.TickingRequest;
+import appeng.api.stacks.AEItemKey;
 import appeng.api.upgrades.IUpgradeInventory;
 import appeng.api.upgrades.UpgradeInventories;
 import appeng.api.util.IConfigManager;
 import appeng.core.definitions.AEBlocks;
 import appeng.core.definitions.AEItems;
+import appeng.me.helpers.MachineSource;
 import appeng.util.inv.AppEngInternalInventory;
 import appeng.util.inv.CombinedInternalInventory;
 import appeng.util.inv.FilteredInternalInventory;
@@ -157,6 +160,9 @@ public class FurnaceBlockEntity extends NetworkCraftingBlockEntity {
                 if (this.mainItemHandler.insertItem(1, outputCopy, false).isEmpty()) {
                     this.setProcessingTime(0);
                     this.mainItemHandler.extractItem(0, 1, false);
+                    if (this.hasAutoExportWork()) {
+                        this.pushToNetwork(outputCopy, 1);
+                    }
                 }
                 this.saveChanges();
                 this.setCooking(false);
@@ -205,6 +211,8 @@ public class FurnaceBlockEntity extends NetworkCraftingBlockEntity {
         if (this.pushOutResult()) {
             return TickRateModulation.URGENT;
         }
+
+        if (hasAutoExportWork()) this.pushToNetwork(this.mainItemHandler.getStackInSlot(1), 1);
         return this.hasCraftWork() ? TickRateModulation.URGENT : this.hasAutoExportWork() ? TickRateModulation.SLOWER : TickRateModulation.SLEEP;
     }
 
@@ -317,6 +325,25 @@ public class FurnaceBlockEntity extends NetworkCraftingBlockEntity {
         }
 
         saveChanges();
+    }
+
+    @Bug("Possible item duplication. Does not always check for the minimum amount of items to remove.")
+    private void pushToNetwork (ItemStack stack, int slotRemoveFrom) {
+        final int removeFactor = switch (this.upgrades.getInstalledUpgrades(AEItems.SPEED_CARD)) {
+            case 1 -> 2;
+            case 2 -> 4;
+            case 3 -> 16;
+            case 4 -> 64;
+            default -> 1;
+        };
+
+        this.getMainNode().ifPresent((grid, node) -> {
+            var source = new MachineSource(this);
+            var stackCopy = stack.copy();
+            var removeAmount = Math.min(stackCopy.getCount(), removeFactor); // supposed to be the number of items to remove, up to the removeFactor
+            grid.getStorageService().getInventory().insert(AEItemKey.of(stackCopy), removeAmount, Actionable.MODULATE, source);
+            this.mainItemHandler.extractItem(slotRemoveFrom, removeAmount, false);
+        });
     }
 
     @Nullable
